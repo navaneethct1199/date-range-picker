@@ -62,7 +62,7 @@ export const Calendar = ({
       <header className="flex items-center justify-between px-3">
         <button
           onClick={onMonthDecrement}
-          className="flex h-6 w-6 items-center justify-center rounded-md transition-all duration-200 hover:bg-zinc-700"
+          className="flex h-6 w-6 items-center justify-center rounded-md transition-all duration-200 hover:bg-zinc-600"
         >
           <ChevronLeftIcon className="h-3.5 w-3.5 fill-zinc-400" />
         </button>
@@ -71,7 +71,7 @@ export const Calendar = ({
         </button>
         <button
           onClick={onMonthIncrement}
-          className="flex h-6 w-6 items-center justify-center rounded-md transition-all duration-200 hover:bg-zinc-700"
+          className="flex h-6 w-6 items-center justify-center rounded-md transition-all duration-200 hover:bg-zinc-600"
         >
           <ChevronLeftIcon className="h-3.5 w-3.5 rotate-180 fill-zinc-400" />
         </button>

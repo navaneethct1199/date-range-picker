@@ -22,7 +22,6 @@ export type DateRangePickerProps = Readonly<{
 
 export const DateRangePicker = ({ onChange, ranges }: DateRangePickerProps) => {
   const container = useRef<HTMLDivElement>(null);
-  const input = useRef<HTMLInputElement>(null);
   const previousAction = useRef<"increment" | "decrement">("increment");
 
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -114,11 +113,6 @@ export const DateRangePicker = ({ onChange, ranges }: DateRangePickerProps) => {
     setDraft(getFormattedRange(startDate, stopDate));
   }, [startDate, stopDate]);
 
-  const handleInputFocus = () => {
-    focus();
-    input.current?.blur();
-  };
-
   const handleRangeSelect = (range: Date[]) => {
     const startDay = range[0].getDay();
     const stopDay = range[1].getDay();
@@ -159,10 +153,10 @@ export const DateRangePicker = ({ onChange, ranges }: DateRangePickerProps) => {
       )}
     >
       <input
-        ref={input}
         placeholder={placeholder}
         value={value}
-        onFocus={handleInputFocus}
+        readOnly
+        onFocus={focus}
         spellCheck={false}
         className="flex-grow bg-transparent py-2 pl-3 text-sm text-zinc-200 outline-none placeholder:text-zinc-400"
       />
