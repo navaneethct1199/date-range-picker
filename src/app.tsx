@@ -2,16 +2,16 @@ import { DateRangePicker } from "./components/date-range-picker";
 
 const ranges = [
   {
-    label: "Today",
-    value: [new Date(), new Date()],
+    label: "Last Friday",
+    value: [new Date(2024, 3, 12), new Date(2024, 3, 12)],
   },
   {
-    label: "Yesterday",
-    value: [new Date(), new Date()],
+    label: "Last Monday",
+    value: [new Date(2024, 3, 8), new Date(2024, 3, 8)],
   },
   {
-    label: "Last 7 Days",
-    value: [new Date(), new Date()],
+    label: "Last Week",
+    value: [new Date(2024, 3, 8), new Date(2024, 3, 12)],
   },
 ];
 

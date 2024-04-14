@@ -1,10 +1,13 @@
-import { useMemo } from "react";
+import { useRef, useMemo } from "react";
 import clsx from "clsx";
+
+import { ChevronLeftIcon } from "./icons/chevron-left-icon";
+import { getDateWithoutTime } from "../helpers/functions";
 
 const days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 type DateCell = {
-  object: Date;
+  dateObject: Date;
   key: string;
   day: number;
   date: number;
@@ -13,15 +16,23 @@ type DateCell = {
 
 export type CalendarProps = Readonly<{
   date: Date;
-  incrementMonth: () => void;
-  decrementMonth: () => void;
+  startDate: Date | null;
+  stopDate: Date | null;
+  onMonthIncrement: () => void;
+  onMonthDecrement: () => void;
+  onDateSelect: (date: Date) => void;
 }>;
 
 export const Calendar = ({
   date,
-  incrementMonth,
-  decrementMonth,
+  startDate,
+  stopDate,
+  onMonthIncrement,
+  onMonthDecrement,
+  onDateSelect,
 }: CalendarProps) => {
+  const today = useRef(getDateWithoutTime());
+
   const [month, headerText, cells] = useMemo<
     [number, string, DateCell[]]
   >(() => {
@@ -45,8 +56,8 @@ export const Calendar = ({
       const date = new Date(startingDate);
       date.setDate(date.getDate() + i);
       cells.push({
-        object: date,
-        key: date.toISOString(),
+        dateObject: date,
+        key: date.toDateString(),
         day: date.getDay(),
         date: date.getDate(),
         month: date.getMonth(),
@@ -60,19 +71,23 @@ export const Calendar = ({
     <div>
       <header className="flex items-center justify-between px-3">
         <button
-          onClick={decrementMonth}
-          className="h-6 w-6 rounded-md hover:bg-zinc-700"
-        ></button>
+          onClick={onMonthDecrement}
+          className="flex h-6 w-6 items-center justify-center rounded-md transition-all duration-200 hover:bg-zinc-700"
+        >
+          <ChevronLeftIcon className="h-3.5 w-3.5 fill-zinc-400" />
+        </button>
         <button className="px-2 py-0.5 text-xs text-zinc-400 outline-none">
           {headerText}
         </button>
         <button
-          onClick={incrementMonth}
-          className="h-6 w-6 rounded-md hover:bg-zinc-700"
-        ></button>
+          onClick={onMonthIncrement}
+          className="flex h-6 w-6 items-center justify-center rounded-md transition-all duration-200 hover:bg-zinc-700"
+        >
+          <ChevronLeftIcon className="h-3.5 w-3.5 rotate-180 fill-zinc-400" />
+        </button>
       </header>
 
-      <main className="grid grid-cols-7 place-items-center px-3 pt-1">
+      <main className="grid grid-cols-7 gap-y-0.5 px-3 pt-1">
         {days.map((day) => (
           <span
             key={day}
@@ -81,22 +96,52 @@ export const Calendar = ({
             {day}
           </span>
         ))}
-        {cells.map((cell) => (
-          <button
-            key={cell.key}
-            className={clsx(
-              "h-[30px] w-[30px] rounded-md text-sm hover:bg-zinc-700 hover:text-zinc-200",
-              {
-                "text-zinc-600":
-                  cell.day === 0 || cell.day === 6 || cell.month !== month,
-                "text-zinc-200":
-                  cell.day !== 0 && cell.day !== 6 && cell.month === month,
-              },
-            )}
-          >
-            {cell.date}
-          </button>
-        ))}
+        {cells.map((cell) => {
+          const isCellDisabled =
+            cell.day === 0 || cell.day === 6 || cell.month !== month;
+
+          return (
+            <div
+              key={cell.key}
+              className="relative flex items-center justify-center"
+            >
+              <button
+                onClick={() => onDateSelect(cell.dateObject)}
+                className={clsx(
+                  "peer z-10 h-[30px] w-[30px] rounded-md text-sm outline-none hover:bg-zinc-700 hover:text-zinc-200",
+                  {
+                    "text-zinc-600": isCellDisabled,
+                    "text-zinc-200": !isCellDisabled,
+                    "outline outline-1 outline-offset-0 outline-sky-400":
+                      cell.dateObject.toDateString() ===
+                      today.current.toDateString(),
+                    "!bg-sky-500":
+                      (cell.dateObject.toDateString() ===
+                        startDate?.toDateString() ||
+                        cell.dateObject.toDateString() ===
+                          stopDate?.toDateString()) &&
+                      !isCellDisabled,
+                  },
+                )}
+              >
+                {cell.date}
+              </button>
+              <div
+                className={clsx(
+                  "absolute h-5 w-full peer-hover:bg-transparent",
+                  {
+                    "bg-sky-800":
+                      startDate &&
+                      stopDate &&
+                      cell.dateObject.getTime() > startDate.getTime() &&
+                      cell.dateObject.getTime() < stopDate.getTime() &&
+                      !isCellDisabled,
+                  },
+                )}
+              />
+            </div>
+          );
+        })}
       </main>
     </div>
   );
