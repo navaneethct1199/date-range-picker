@@ -32,7 +32,7 @@ const getWeekendsInRange = (startDate: Date, stopDate: Date) => {
 };
 
 export type DateRangePickerProps = Readonly<{
-  onChange: (value: { range: string[]; weekends: string[] }) => void;
+  onChange: (value: [string[], string[]]) => void;
   ranges?: Array<{
     label: string;
     value: Date[];
@@ -159,10 +159,10 @@ export const DateRangePicker = ({ onChange, ranges }: DateRangePickerProps) => {
     setDraft(draft);
     setValue(draft);
 
-    onChange({
-      range: [formatDate(range[0]), formatDate(range[1])],
-      weekends: getWeekendsInRange(range[0], range[1]),
-    });
+    onChange([
+      [formatDate(range[0]), formatDate(range[1])],
+      getWeekendsInRange(range[0], range[1]),
+    ]);
     blur();
   };
 
@@ -170,10 +170,10 @@ export const DateRangePicker = ({ onChange, ranges }: DateRangePickerProps) => {
     if (!startDate || !stopDate) return;
     setValue(draft);
 
-    onChange({
-      range: [formatDate(startDate), formatDate(stopDate)],
-      weekends: getWeekendsInRange(startDate, stopDate),
-    });
+    onChange([
+      [formatDate(startDate), formatDate(stopDate)],
+      getWeekendsInRange(startDate, stopDate),
+    ]);
     blur();
   };
 
