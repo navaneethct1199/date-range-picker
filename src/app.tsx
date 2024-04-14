@@ -17,6 +17,11 @@ const ranges = [
 
 export const App = () => (
   <main className="h-full bg-zinc-950 p-8 text-zinc-300">
-    <DateRangePicker ranges={ranges} />
+    <DateRangePicker
+      onChange={(value) =>
+        setTimeout(() => alert(JSON.stringify(value, undefined, 2)), 0)
+      }
+      ranges={ranges}
+    />
   </main>
 );

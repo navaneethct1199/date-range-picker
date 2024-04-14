@@ -2,17 +2,9 @@ import { useRef, useMemo } from "react";
 import clsx from "clsx";
 
 import { ChevronLeftIcon } from "./icons/chevron-left-icon";
-import { getDateWithoutTime } from "../helpers/functions";
+import { getNewDateWithoutTime } from "../helpers/functions";
 
 const days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-type DateCell = {
-  dateObject: Date;
-  key: string;
-  day: number;
-  date: number;
-  month: number;
-};
 
 export type CalendarProps = Readonly<{
   date: Date;
@@ -31,11 +23,9 @@ export const Calendar = ({
   onMonthDecrement,
   onDateSelect,
 }: CalendarProps) => {
-  const today = useRef(getDateWithoutTime());
+  const today = useRef(getNewDateWithoutTime());
 
-  const [month, headerText, cells] = useMemo<
-    [number, string, DateCell[]]
-  >(() => {
+  const [month, headerText, cells] = useMemo(() => {
     const dateCopy = new Date(date);
     dateCopy.setDate(1);
 
@@ -48,12 +38,12 @@ export const Calendar = ({
       .join(", ");
 
     const day = dateCopy.getDay();
-    const startingDate: Date = new Date(dateCopy);
-    startingDate.setDate(startingDate.getDate() - day);
+    const calendarStartDate: Date = new Date(dateCopy);
+    calendarStartDate.setDate(calendarStartDate.getDate() - day);
 
     const cells = [];
     for (let i = 0; i < 42; i++) {
-      const date = new Date(startingDate);
+      const date = new Date(calendarStartDate);
       date.setDate(date.getDate() + i);
       cells.push({
         dateObject: date,

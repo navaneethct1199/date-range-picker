@@ -3,7 +3,7 @@ import clsx from "clsx";
 
 import { Calendar } from "./calendar";
 import { CalendarIcon } from "./icons/calendar-icon";
-import { getDateWithoutTime } from "../helpers/functions";
+import { getNewDateWithoutTime } from "../helpers/functions";
 
 const placeholder = "yyyy-MM-dd ~ yyyy-MM-dd";
 
@@ -20,14 +20,26 @@ const getFormattedDate = (startDate: Date | null, stopDate: Date | null) => {
   return value;
 };
 
+const getWeekendsInRange = (startDate: Date, stopDate: Date) => {
+  const weekends = [];
+  const start = new Date(startDate);
+  while (start.toDateString() !== stopDate.toDateString()) {
+    const startDay = start.getDay();
+    if (startDay === 0 || startDay === 6) weekends.push(formatDate(start));
+    start.setDate(start.getDate() + 1);
+  }
+  return weekends;
+};
+
 export type DateRangePickerProps = Readonly<{
+  onChange: (value: { range: string[]; weekends: string[] }) => void;
   ranges?: Array<{
     label: string;
     value: Date[];
   }>;
 }>;
 
-export const DateRangePicker = ({ ranges }: DateRangePickerProps) => {
+export const DateRangePicker = ({ onChange, ranges }: DateRangePickerProps) => {
   const container = useRef<HTMLDivElement>(null);
   const previousAction = useRef<"increment" | "decrement">("increment");
 
@@ -38,13 +50,13 @@ export const DateRangePicker = ({ ranges }: DateRangePickerProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
-  const [date1, setDate1] = useState(() => {
-    const date = getDateWithoutTime();
+  const [calendar1Date, setCalendar1Date] = useState(() => {
+    const date = getNewDateWithoutTime();
     date.setDate(1);
     return date;
   });
-  const [date2, setDate2] = useState(() => {
-    const date = getDateWithoutTime();
+  const [calendar2Date, setCalendar2Date] = useState(() => {
+    const date = getNewDateWithoutTime();
     date.setDate(1);
     date.setMonth(date.getMonth() + 1);
     return date;
@@ -109,12 +121,12 @@ export const DateRangePicker = ({ ranges }: DateRangePickerProps) => {
   };
 
   useEffect(() => {
-    if (date1.toDateString() === date2.toDateString()) {
+    if (calendar1Date.toDateString() === calendar2Date.toDateString()) {
       if (previousAction.current === "increment")
-        handleMonthIncrement(setDate2);
-      else handleMonthDecrement(setDate1);
+        handleMonthIncrement(setCalendar2Date);
+      else handleMonthDecrement(setCalendar1Date);
     }
-  }, [date1, date2]);
+  }, [calendar1Date, calendar2Date]);
 
   useEffect(() => {
     setDraft(getFormattedDate(startDate, stopDate));
@@ -146,11 +158,22 @@ export const DateRangePicker = ({ ranges }: DateRangePickerProps) => {
     const draft = getFormattedDate(range[0], range[1]);
     setDraft(draft);
     setValue(draft);
+
+    onChange({
+      range: [formatDate(range[0]), formatDate(range[1])],
+      weekends: getWeekendsInRange(range[0], range[1]),
+    });
     blur();
   };
 
   const handleSubmit = () => {
+    if (!startDate || !stopDate) return;
     setValue(draft);
+
+    onChange({
+      range: [formatDate(startDate), formatDate(stopDate)],
+      weekends: getWeekendsInRange(startDate, stopDate),
+    });
     blur();
   };
 
@@ -195,21 +218,21 @@ export const DateRangePicker = ({ ranges }: DateRangePickerProps) => {
         <section className="grid grid-cols-2 border-b border-t border-zinc-700">
           <div className="border-r border-zinc-700 pb-4 pt-3">
             <Calendar
-              date={date1}
+              date={calendar1Date}
               startDate={startDate}
               stopDate={stopDate}
-              onMonthIncrement={() => handleMonthIncrement(setDate1)}
-              onMonthDecrement={() => handleMonthDecrement(setDate1)}
+              onMonthIncrement={() => handleMonthIncrement(setCalendar1Date)}
+              onMonthDecrement={() => handleMonthDecrement(setCalendar1Date)}
               onDateSelect={handleDateSelect}
             />
           </div>
           <div className="py-3">
             <Calendar
-              date={date2}
+              date={calendar2Date}
               startDate={startDate}
               stopDate={stopDate}
-              onMonthIncrement={() => handleMonthIncrement(setDate2)}
-              onMonthDecrement={() => handleMonthDecrement(setDate2)}
+              onMonthIncrement={() => handleMonthIncrement(setCalendar2Date)}
+              onMonthDecrement={() => handleMonthDecrement(setCalendar2Date)}
               onDateSelect={handleDateSelect}
             />
           </div>
@@ -229,7 +252,8 @@ export const DateRangePicker = ({ ranges }: DateRangePickerProps) => {
           </div>
           <button
             onClick={handleSubmit}
-            className="rounded-md bg-sky-500 px-2.5 py-[5px] text-sm text-white transition-all duration-200 hover:bg-sky-400"
+            disabled={!startDate || !stopDate}
+            className="rounded-md bg-sky-500 px-2.5 py-[5px] text-sm text-white transition-all duration-200 hover:bg-sky-400 disabled:opacity-40 disabled:hover:bg-sky-500"
           >
             OK
           </button>
