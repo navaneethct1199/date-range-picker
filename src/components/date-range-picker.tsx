@@ -3,33 +3,14 @@ import clsx from "clsx";
 
 import { Calendar } from "./calendar";
 import { CalendarIcon } from "./icons/calendar-icon";
-import { getNewDateWithoutTime } from "../helpers/functions";
+import {
+  getNewDateWithoutTime,
+  formatDate,
+  getFormattedRange,
+  getWeekendsInRange,
+} from "../helpers/functions";
 
 const placeholder = "yyyy-MM-dd ~ yyyy-MM-dd";
-
-const formatDate = (date: Date) => {
-  const dateNumber = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${year}-${month}-${dateNumber}`;
-};
-
-const getFormattedDate = (startDate: Date | null, stopDate: Date | null) => {
-  let value = startDate ? `${formatDate(startDate)} ~ ` : "yyyy-MM-dd ~ ";
-  value += stopDate ? formatDate(stopDate) : "yyyy-MM-dd";
-  return value;
-};
-
-const getWeekendsInRange = (startDate: Date, stopDate: Date) => {
-  const weekends = [];
-  const start = new Date(startDate);
-  while (start.toDateString() !== stopDate.toDateString()) {
-    const startDay = start.getDay();
-    if (startDay === 0 || startDay === 6) weekends.push(formatDate(start));
-    start.setDate(start.getDate() + 1);
-  }
-  return weekends;
-};
 
 export type DateRangePickerProps = Readonly<{
   onChange: (value: [string[], string[]]) => void;
@@ -41,6 +22,7 @@ export type DateRangePickerProps = Readonly<{
 
 export const DateRangePicker = ({ onChange, ranges }: DateRangePickerProps) => {
   const container = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
   const previousAction = useRef<"increment" | "decrement">("increment");
 
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -129,21 +111,12 @@ export const DateRangePicker = ({ onChange, ranges }: DateRangePickerProps) => {
   }, [calendar1Date, calendar2Date]);
 
   useEffect(() => {
-    setDraft(getFormattedDate(startDate, stopDate));
+    setDraft(getFormattedRange(startDate, stopDate));
   }, [startDate, stopDate]);
 
   const handleInputFocus = () => {
     focus();
-    if (!value) setValue(placeholder);
-  };
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    closeDatePicker();
-    setValue(event.target.value);
-  };
-
-  const handleInputBlur = () => {
-    if (value === placeholder) setValue("");
+    input.current?.blur();
   };
 
   const handleRangeSelect = (range: Date[]) => {
@@ -155,7 +128,7 @@ export const DateRangePicker = ({ onChange, ranges }: DateRangePickerProps) => {
 
     setStartDate(range[0]);
     setStopDate(range[1]);
-    const draft = getFormattedDate(range[0], range[1]);
+    const draft = getFormattedRange(range[0], range[1]);
     setDraft(draft);
     setValue(draft);
 
@@ -186,11 +159,10 @@ export const DateRangePicker = ({ onChange, ranges }: DateRangePickerProps) => {
       )}
     >
       <input
+        ref={input}
         placeholder={placeholder}
         value={value}
         onFocus={handleInputFocus}
-        onChange={handleInputChange}
-        onBlur={handleInputBlur}
         spellCheck={false}
         className="flex-grow bg-transparent py-2 pl-3 text-sm text-zinc-200 outline-none placeholder:text-zinc-400"
       />
